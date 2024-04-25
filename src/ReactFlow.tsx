@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import ReactFlow, { Controls, addEdge, useEdgesState, useNodesState } from "reactflow";
+import React, { useCallback, useState } from "react";
+import ReactFlow, { Controls, addEdge, applyNodeChanges, useEdgesState, useNodesState } from "reactflow";
 import "reactflow/dist/style.css";
 
 const initialNodes = [
@@ -23,29 +23,73 @@ const initialEdges = [
   { id: "e3-6", source: "5", target: "6" },
 ];
 const ReactWorkFlowComponent = () => {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+  const onConnect = useCallback(
+    (params) => {
+      // Destructure source and target from params to know which nodes are being connected.
+      const { source, target } = params;
 
+      // Check if the edge being created is not connecting a node to itself.
+      if (source === target) {
+        console.log("Cannot connect node to itself.");
+        return;
+      }
+
+      // Check if there's already an edge from the source node.
+      const sourceHasConnection = edges.some((edge) => edge.source === source);
+      if (sourceHasConnection) {
+        console.log("This node already has a connection.");
+        return;
+      }
+
+      // If checks pass, then add the edge.
+      setEdges((eds) => addEdge(params, eds));
+    },
+    [edges, setEdges]
+  );
+  const [rfInstance, setRfInstance] = useState(null);
+  const onNodesChange = useCallback(
+    (changes) => {
+      setNodes((nds) => applyNodeChanges(changes, nds));
+      console.log("Node positions updated:", nodes);
+    },
+    [setNodes, nodes]
+  );
+
+  const saveWorkFlow = useCallback(() => {
+    // console.log("Nodes:", nodes);
+    // console.log("Edges:", edges);
+
+    if (rfInstance) {
+      const flow = rfInstance.toObject();
+      console.log({ flow });
+      // localStorage.setItem(flowKey, JSON.stringify(flow));
+    }
+  }, [nodes, edges]);
   return (
-    <div style={{ width: "500px", height: "500px", border: "1px solid red", overflow: "hidden" }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-        fitViewOptions={{ padding: 0.1 }}
-        minZoom={1}
-        maxZoom={1}
-        nodesDraggable={true}
-        // onNodeDrag={onNodeDrag}
-      >
-        <Controls />
-      </ReactFlow>
-    </div>
+    <>
+      <div style={{ width: "500px", height: "500px", border: "1px solid red", overflow: "hidden" }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          fitView
+          fitViewOptions={{ padding: 0.1 }}
+          minZoom={1}
+          maxZoom={1}
+          //   onInit={setRfInstance}
+          nodesDraggable={true}
+          // onNodeDrag={onNodeDrag}
+        >
+          <Controls />
+        </ReactFlow>
+      </div>
+      <button onClick={saveWorkFlow}>Save WorkFlow</button>
+    </>
   );
 };
 
