@@ -1,0 +1,11 @@
+.flow-container {
+  width: 100%; /* Adjust based on the parent size or responsive rules */
+  height: 300px; /* Adjust as necessary */
+  border: 1px solid red;
+  overflow: hidden;
+}
+
+.flow-wrapper {
+  width: 100%;
+  height: 100%;
+}
