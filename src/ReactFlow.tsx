@@ -28,32 +28,38 @@ const ReactWorkFlowComponent = () => {
 
   const onConnect = useCallback(
     (params) => {
-      // Destructure source and target from params to know which nodes are being connected.
       const { source, target } = params;
 
-      // Check if the edge being created is not connecting a node to itself.
+      // Check for self connections.
       if (source === target) {
         console.log("Cannot connect node to itself.");
         return;
       }
 
-      // Check if there's already an edge from the source node.
+      // Check for existing connections from the source node.
       const sourceHasConnection = edges.some((edge) => edge.source === source);
       if (sourceHasConnection) {
-        console.log("This node already has a connection.");
+        console.log("This node already has an outgoing connection.");
         return;
       }
 
-      // If checks pass, then add the edge.
+      // Check for existing connections to the target node.
+      const targetHasConnection = edges.some((edge) => edge.target === target);
+      if (targetHasConnection) {
+        console.log("This node already has an incoming connection.");
+        return;
+      }
+
+      // If all checks pass, add the new edge.
       setEdges((eds) => addEdge(params, eds));
     },
     [edges, setEdges]
   );
+
   const [rfInstance, setRfInstance] = useState(null);
   const onNodesChange = useCallback(
     (changes) => {
       setNodes((nds) => applyNodeChanges(changes, nds));
-      console.log("Node positions updated:", nodes);
     },
     [setNodes, nodes]
   );
@@ -68,6 +74,7 @@ const ReactWorkFlowComponent = () => {
       // localStorage.setItem(flowKey, JSON.stringify(flow));
     }
   }, [nodes, edges]);
+
   return (
     <>
       <div style={{ width: "500px", height: "500px", border: "1px solid red", overflow: "hidden" }}>
@@ -81,7 +88,8 @@ const ReactWorkFlowComponent = () => {
           fitViewOptions={{ padding: 0.1 }}
           minZoom={1}
           maxZoom={1}
-          //   onInit={setRfInstance}
+          onInit={setRfInstance}
+          edgesUpdatable={true}
           nodesDraggable={true}
           // onNodeDrag={onNodeDrag}
         >
