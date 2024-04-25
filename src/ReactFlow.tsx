@@ -1,5 +1,12 @@
 import React, { useCallback, useState } from "react";
-import ReactFlow, { Controls, addEdge, applyNodeChanges, useEdgesState, useNodesState } from "reactflow";
+import ReactFlow, {
+  Controls,
+  ReactFlowInstance,
+  addEdge,
+  applyNodeChanges,
+  useEdgesState,
+  useNodesState,
+} from "reactflow";
 import "reactflow/dist/style.css";
 
 const initialNodes = [
@@ -26,6 +33,7 @@ const ReactWorkFlowComponent = () => {
   const [nodes, setNodes] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
+  const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const onConnect = useCallback(
     (params) => {
       const { source, target } = params;
@@ -56,7 +64,6 @@ const ReactWorkFlowComponent = () => {
     [edges, setEdges]
   );
 
-  const [rfInstance, setRfInstance] = useState(null);
   const onNodesChange = useCallback(
     (changes) => {
       setNodes((nds) => applyNodeChanges(changes, nds));
